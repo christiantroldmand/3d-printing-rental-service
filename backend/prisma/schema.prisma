@@ -1,0 +1,312 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  phone     String?
+  role      UserRole @default(CUSTOMER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  orders    Order[]
+  addresses Address[]
+
+  @@map("users")
+}
+
+model Address {
+  id          String  @id @default(cuid())
+  userId      String
+  type        AddressType @default(SHIPPING)
+  street      String
+  city        String
+  state       String?
+  postalCode  String
+  country     String
+  isDefault   Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders      Order[] @relation("ShippingAddress")
+
+  @@map("addresses")
+}
+
+// Material Management
+model Material {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  type            MaterialType
+  density         Float    // g/cm³
+  costPerGram     Float    // EUR per gram
+  printTempMin    Int      // °C
+  printTempMax    Int      // °C
+  bedTempMin      Int      // °C
+  bedTempMax      Int      // °C
+  printSpeed      Float    // Multiplier (0.1-1.0)
+  shrinkageFactor Float    // Percentage
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  inventory       MaterialInventory[]
+  orderItems      OrderItem[]
+
+  @@map("materials")
+}
+
+model MaterialInventory {
+  id          String   @id @default(cuid())
+  materialId  String
+  color       String
+  stock       Int      @default(0)
+  minStock    Int      @default(10)
+  maxStock    Int      @default(1000)
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  material    Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@unique([materialId, color])
+  @@map("material_inventory")
+}
+
+// STL File Management
+model STLFile {
+  id            String   @id @default(cuid())
+  filename      String
+  originalName  String
+  filePath      String
+  fileSize      Int      // bytes
+  mimeType      String
+  volume        Float?   // cm³
+  dimensions    Json?    // {width, height, depth} in mm
+  surfaceArea   Float?   // cm²
+  layerCount    Int?
+  printTime     Float?   // estimated hours
+  isAnalyzed    Boolean  @default(false)
+  analysisData  Json?    // Additional analysis results
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  orderItems    OrderItem[]
+
+  @@map("stl_files")
+}
+
+// Order Management
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  userId          String
+  status          OrderStatus @default(PENDING_PAYMENT)
+  subtotal        Float
+  taxAmount       Float
+  totalAmount     Float
+  currency        String      @default("EUR")
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentIntentId String?
+  shippingAddressId String?
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  completedAt     DateTime?
+
+  // Relations
+  user            User        @relation(fields: [userId], references: [id])
+  shippingAddress Address?    @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
+  items           OrderItem[]
+  payments        Payment[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id              String   @id @default(cuid())
+  orderId         String
+  stlFileId       String
+  materialId      String
+  quantity        Int      @default(1)
+  layerHeight     Float    // mm
+  infillPercent   Float    // percentage
+  printQuality    PrintQuality
+  supportRequired Boolean  @default(false)
+  estimatedTime   Float?   // hours
+  materialCost    Float
+  timeCost        Float
+  electricityCost Float
+  laborCost       Float
+  platformFee     Float
+  totalCost       Float
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  stlFile         STLFile  @relation(fields: [stlFileId], references: [id])
+  material        Material @relation(fields: [materialId], references: [id])
+
+  @@map("order_items")
+}
+
+// Payment Management
+model Payment {
+  id              String        @id @default(cuid())
+  orderId         String
+  amount          Float
+  currency        String        @default("EUR")
+  status          PaymentStatus
+  method          PaymentMethod
+  stripePaymentId String?
+  stripeChargeId  String?
+  refundAmount    Float?        @default(0)
+  refundReason    String?
+  processedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+// Print Job Management
+model PrintJob {
+  id              String        @id @default(cuid())
+  orderItemId     String        @unique
+  status          PrintStatus   @default(QUEUED)
+  printerId       String        @default("bamboo-x1-carbon-1")
+  startedAt       DateTime?
+  completedAt     DateTime?
+  actualTime      Float?        // actual print time in hours
+  notes           String?
+  errorMessage    String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  orderItem       OrderItem     @relation(fields: [orderItemId], references: [id])
+
+  @@map("print_jobs")
+}
+
+// Electricity Pricing (Nordpool Integration)
+model ElectricityPrice {
+  id        String   @id @default(cuid())
+  date      DateTime
+  hour      Int      // 0-23
+  price     Float    // EUR/MWh
+  area      String   @default("DK1") // Nordpool area
+  createdAt DateTime @default(now())
+
+  @@unique([date, hour, area])
+  @@map("electricity_prices")
+}
+
+// System Configuration
+model SystemConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_config")
+}
+
+// Enums
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  OPERATOR
+}
+
+enum AddressType {
+  BILLING
+  SHIPPING
+}
+
+enum MaterialType {
+  PLA
+  PETG
+  ABS
+  TPU
+  WOOD_FILLED
+  METAL_FILLED
+  CARBON_FIBER
+  OTHER
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAYMENT_CONFIRMED
+  IN_QUEUE
+  PRINTING
+  POST_PROCESSING
+  READY_FOR_PICKUP
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentMethod {
+  CARD
+  APPLE_PAY
+  GOOGLE_PAY
+  SEPA
+  KLARNA
+  AFTERPAY
+}
+
+enum PrintQuality {
+  DRAFT
+  NORMAL
+  HIGH
+}
+
+enum PrintStatus {
+  QUEUED
+  PREPARING
+  PRINTING
+  PAUSED
+  COMPLETED
+  FAILED
+  CANCELLED
+}

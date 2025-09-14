@@ -9,7 +9,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid,
+  Grid2 as Grid,
   Chip,
   Divider,
   useTheme,
@@ -19,7 +19,7 @@ import {
 import {
   AttachMoney as MoneyIcon,
   Schedule as TimeIcon,
-  Eco as EcoIcon,
+  LocalShipping as EcoIcon,
   Palette as MaterialIcon,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';

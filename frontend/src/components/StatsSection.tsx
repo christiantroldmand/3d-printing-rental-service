@@ -3,7 +3,7 @@ import {
   Box,
   Container,
   Typography,
-  Grid,
+  Grid2 as Grid,
   Card,
   CardContent,
   useTheme,
@@ -11,7 +11,7 @@ import {
 import {
   Print as PrintIcon,
   Speed as SpeedIcon,
-  Eco as EcoIcon,
+  LocalShipping as EcoIcon,
   Star as StarIcon,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';

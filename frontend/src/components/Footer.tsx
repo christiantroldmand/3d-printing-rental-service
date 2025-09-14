@@ -3,7 +3,7 @@ import {
   Box,
   Container,
   Typography,
-  Grid,
+  Grid2 as Grid,
   Link,
   IconButton,
   useTheme,
