@@ -3,7 +3,6 @@ import {
   Box,
   Container,
   Typography,
-  Grid2 as Grid,
   Card,
   CardContent,
   useTheme,
@@ -72,9 +71,9 @@ const StatsSection: React.FC = () => {
           services you can rely on
         </Typography>
 
-        <Grid container spacing={4}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 4 }}>
           {stats.map((stat, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
+            <Box key={index}>
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -142,9 +141,9 @@ const StatsSection: React.FC = () => {
                   </CardContent>
                 </Card>
               </motion.div>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       </Container>
     </Box>
   );

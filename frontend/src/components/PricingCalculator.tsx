@@ -9,7 +9,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid2 as Grid,
   Chip,
   Divider,
   useTheme,
@@ -129,8 +128,8 @@ const PricingCalculator: React.FC = () => {
             Calculate Your Print Cost
           </Typography>
 
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+            <Box sx={{ flex: 1 }}>
               <TextField
                 fullWidth
                 label="Volume (cm³)"
@@ -169,9 +168,9 @@ const PricingCalculator: React.FC = () => {
                   <MenuItem value="0.3">0.3mm (Fast)</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: 1 }}>
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel>Infill Percentage</InputLabel>
                 <Select
@@ -212,8 +211,8 @@ const PricingCalculator: React.FC = () => {
                   color="info"
                 />
               </Box>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
 
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>

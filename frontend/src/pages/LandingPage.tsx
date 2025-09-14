@@ -4,7 +4,7 @@ import {
   Container,
   Typography,
   Button,
-  Grid2 as Grid,
+  Grid,
   Card,
   CardContent,
   CardActions,
@@ -94,8 +94,8 @@ const LandingPage: React.FC = () => {
         />
         
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-          <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={6}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', gap: 4 }}>
+            <Box sx={{ flex: 1 }}>
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -210,9 +210,9 @@ const LandingPage: React.FC = () => {
                   </Box>
                 </Box>
               </motion.div>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: 1 }}>
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -252,8 +252,8 @@ const LandingPage: React.FC = () => {
                   </Box>
                 </Box>
               </motion.div>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </Container>
       </Box>
 
@@ -297,9 +297,9 @@ const LandingPage: React.FC = () => {
             and transparent pricing
           </Typography>
 
-          <Grid container spacing={4}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 4 }}>
             {features.map((feature, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
+              <Box key={index}>
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -308,9 +308,9 @@ const LandingPage: React.FC = () => {
                 >
                   <FeatureCard {...feature} />
                 </motion.div>
-              </Grid>
+              </Box>
             ))}
-          </Grid>
+          </Box>
         </Container>
       </Box>
 

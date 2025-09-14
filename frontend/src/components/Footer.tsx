@@ -3,7 +3,6 @@ import {
   Box,
   Container,
   Typography,
-  Grid2 as Grid,
   Link,
   IconButton,
   useTheme,
@@ -29,8 +28,8 @@ const Footer: React.FC = () => {
       }}
     >
       <Container maxWidth="lg">
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={4}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 4, mb: 4 }}>
+          <Box>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
               3D Print Pro
             </Typography>
@@ -52,9 +51,9 @@ const Footer: React.FC = () => {
                 <EmailIcon />
               </IconButton>
             </Box>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} sm={6} md={2}>
+          <Box>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
               Services
             </Typography>
@@ -80,9 +79,9 @@ const Footer: React.FC = () => {
                 </Typography>
               </Link>
             </Box>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} sm={6} md={2}>
+          <Box>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
               Support
             </Typography>
@@ -108,37 +107,9 @@ const Footer: React.FC = () => {
                 </Typography>
               </Link>
             </Box>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} sm={6} md={2}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-              Company
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Link href="#" color="inherit" sx={{ textDecoration: 'none' }}>
-                <Typography variant="body2" sx={{ color: theme.palette.grey[300] }}>
-                  About Us
-                </Typography>
-              </Link>
-              <Link href="#" color="inherit" sx={{ textDecoration: 'none' }}>
-                <Typography variant="body2" sx={{ color: theme.palette.grey[300] }}>
-                  Careers
-                </Typography>
-              </Link>
-              <Link href="#" color="inherit" sx={{ textDecoration: 'none' }}>
-                <Typography variant="body2" sx={{ color: theme.palette.grey[300] }}>
-                  Privacy Policy
-                </Typography>
-              </Link>
-              <Link href="#" color="inherit" sx={{ textDecoration: 'none' }}>
-                <Typography variant="body2" sx={{ color: theme.palette.grey[300] }}>
-                  Terms of Service
-                </Typography>
-              </Link>
-            </Box>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={2}>
+          <Box>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
               Contact
             </Typography>
@@ -153,13 +124,12 @@ const Footer: React.FC = () => {
                 📍 Copenhagen, Denmark
               </Typography>
             </Box>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         <Box
           sx={{
             borderTop: `1px solid ${theme.palette.grey[700]}`,
-            mt: 4,
             pt: 4,
             display: 'flex',
             justifyContent: 'space-between',
