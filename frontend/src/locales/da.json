@@ -1,0 +1,126 @@
+{
+  "common": {
+    "loading": "Indlæser...",
+    "error": "Fejl",
+    "success": "Succes",
+    "cancel": "Annuller",
+    "save": "Gem",
+    "delete": "Slet",
+    "edit": "Rediger",
+    "close": "Luk",
+    "next": "Næste",
+    "previous": "Forrige",
+    "submit": "Send",
+    "search": "Søg",
+    "filter": "Filtrer",
+    "sort": "Sorter",
+    "refresh": "Opdater",
+    "back": "Tilbage",
+    "continue": "Fortsæt",
+    "finish": "Afslut"
+  },
+  "navigation": {
+    "home": "Hjem",
+    "order": "Bestil",
+    "dashboard": "Dashboard",
+    "admin": "Admin",
+    "login": "Log ind",
+    "register": "Registrer",
+    "logout": "Log ud"
+  },
+  "hero": {
+    "title": "Professionelle 3D Print Tjenester",
+    "subtitle": "Forvandl dine idéer til virkelighed med vores avancerede 3D print teknologi",
+    "cta": "Start Din Bestilling",
+    "learnMore": "Lær Mere"
+  },
+  "features": {
+    "title": "Hvorfor vælge NORDSJÆLLAND 3D PRINT SERVICE?",
+    "quality": {
+      "title": "Premium Kvalitet",
+      "description": "Højpræcisions printing med professionelle materialer"
+    },
+    "speed": {
+      "title": "Hurtig Levering",
+      "description": "Hurtig levering uden at gå på kompromis med kvaliteten"
+    },
+    "materials": {
+      "title": "Bredt Materialeudvalg",
+      "description": "PLA, PETG, ABS, TPU og flere materialer tilgængelige"
+    },
+    "support": {
+      "title": "Ekspert Support",
+      "description": "Professionel vejledning gennem hele dit projekt"
+    }
+  },
+  "pricing": {
+    "title": "Beregn Din Print Pris",
+    "volume": "Volumen (cm³)",
+    "material": "Materiale",
+    "layerHeight": "Lag Højde",
+    "infill": "Fyld Procent",
+    "quality": "Print Kvalitet",
+    "calculate": "Beregn Pris",
+    "materialCost": "Materiale Omkostning",
+    "timeCost": "Tid Omkostning",
+    "electricityCost": "El Omkostning",
+    "platformFee": "Platform Gebyr",
+    "totalCost": "Total Omkostning",
+    "breakdown": "Pris Opdeling"
+  },
+  "order": {
+    "title": "Placer Din Bestilling",
+    "step1": "Upload 3D Fil",
+    "step2": "Vælg Materiale & Indstillinger",
+    "step3": "Gennemgå & Beregn Pris",
+    "step4": "Placer Bestilling",
+    "uploadTitle": "Upload Din 3D Fil",
+    "uploadDescription": "Upload en STL, OBJ eller 3MF fil for at komme i gang",
+    "dragDrop": "Træk og slip din fil her, eller klik for at browse",
+    "supportedFormats": "Understøttede formater: .stl, .obj, .3mf • Maks størrelse: 50MB",
+    "fileUploaded": "Fil uploadet succesfuldt",
+    "removeFile": "Fjern Fil",
+    "preview": "3D Forhåndsvisning",
+    "materialSettings": "Materiale & Print Indstillinger",
+    "selectMaterial": "Vælg Materiale",
+    "layerHeight": "Lag Højde (mm)",
+    "infillPercentage": "Fyld Procent",
+    "printQuality": "Print Kvalitet",
+    "quantity": "Antal",
+    "reviewTitle": "Gennemgå Din Bestilling",
+    "orderSummary": "Bestillings Oversigt",
+    "placeOrder": "Placer Bestilling",
+    "thingiverseImport": "Importer fra Thingiverse",
+    "browseThingiverse": "Browse Thingiverse"
+  },
+  "materials": {
+    "PLA": "PLA",
+    "PETG": "PETG",
+    "ABS": "ABS",
+    "TPU": "TPU",
+    "ASA": "ASA"
+  },
+  "quality": {
+    "draft": "Kladde",
+    "standard": "Standard",
+    "high": "Høj"
+  },
+  "stats": {
+    "title": "Vores tal taler for sig selv",
+    "projects": "Projekter Fuldført",
+    "customers": "Tilfredse Kunder",
+    "materials": "Materialer Tilgængelige",
+    "years": "Års Erfaring"
+  },
+  "footer": {
+    "company": "NORDSJÆLLAND 3D PRINT SERVICE",
+    "description": "Professionelle 3D print tjenester i Nordsjælland, Danmark",
+    "quickLinks": "Hurtige Links",
+    "services": "Tjenester",
+    "contact": "Kontakt",
+    "address": "Nordsjælland, Danmark",
+    "phone": "+45 XX XX XX XX",
+    "email": "info@nordsjaelland3dprint.dk",
+    "copyright": "© 2024 NORDSJÆLLAND 3D PRINT SERVICE. Alle rettigheder forbeholdes."
+  }
+}

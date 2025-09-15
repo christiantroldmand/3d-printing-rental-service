@@ -56,7 +56,8 @@ model Material {
   name            String   @unique
   type            MaterialType
   density         Float    // g/cm³
-  costPerGram     Float    // EUR per gram
+  price           Float    // DKK per kg
+  costPerGram     Float    // DKK per gram
   printTempMin    Int      // °C
   printTempMax    Int      // °C
   bedTempMin      Int      // °C
@@ -94,21 +95,26 @@ model MaterialInventory {
 
 // STL File Management
 model STLFile {
-  id            String   @id @default(cuid())
-  filename      String
-  originalName  String
-  filePath      String
-  fileSize      Int      // bytes
-  mimeType      String
-  volume        Float?   // cm³
-  dimensions    Json?    // {width, height, depth} in mm
-  surfaceArea   Float?   // cm²
-  layerCount    Int?
-  printTime     Float?   // estimated hours
-  isAnalyzed    Boolean  @default(false)
-  analysisData  Json?    // Additional analysis results
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  filename            String
+  originalName        String
+  filePath            String
+  fileSize            Int      // bytes
+  mimeType            String
+  volume              Float?   // cm³
+  dimensions          Json?    // {width, height, depth} in cm
+  surfaceArea         Float?   // cm²
+  boundingBox         Json?    // {min: {x,y,z}, max: {x,y,z}}
+  estimatedPrintTime  Float?   // hours
+  materialUsage       Float?   // grams
+  supportRequired     Boolean  @default(false)
+  printabilityScore   Int?     // 0-100
+  layerCount          Int?
+  printTime           Float?   // estimated hours (legacy)
+  isAnalyzed          Boolean  @default(false)
+  analysisData        Json?    // Additional analysis results
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   // Relations
   orderItems    OrderItem[]
@@ -167,6 +173,7 @@ model OrderItem {
   order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   stlFile         STLFile  @relation(fields: [stlFileId], references: [id])
   material        Material @relation(fields: [materialId], references: [id])
+  printJob        PrintJob?
 
   @@map("order_items")
 }
@@ -218,8 +225,10 @@ model ElectricityPrice {
   id        String   @id @default(cuid())
   date      DateTime
   hour      Int      // 0-23
-  price     Float    // EUR/MWh
-  area      String   @default("DK1") // Nordpool area
+  price     Float    // DKK/kWh
+  currency  String   @default("DKK")
+  area      String   @default("DK2") // Nordpool area (DK2 = Copenhagen)
+  timestamp DateTime @default(now())
   createdAt DateTime @default(now())
 
   @@unique([date, hour, area])
@@ -239,10 +248,22 @@ model SystemConfig {
   @@map("system_config")
 }
 
+// Configuration (for pricing settings)
+model Configuration {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("configuration")
+}
+
 // Enums
 enum UserRole {
   CUSTOMER
   ADMIN
+  MANAGER
   OPERATOR
 }
 

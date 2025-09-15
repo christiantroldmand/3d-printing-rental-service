@@ -141,9 +141,22 @@ const Footer: React.FC = () => {
           <Typography variant="body2" sx={{ color: theme.palette.grey[400] }}>
             © 2024 3D Print Pro. All rights reserved.
           </Typography>
-          <Typography variant="body2" sx={{ color: theme.palette.grey[400] }}>
-            Powered by Bamboo Lab X1 Carbon
-          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Typography variant="body2" sx={{ color: theme.palette.grey[400] }}>
+              Powered by Bamboo Lab X1 Carbon
+            </Typography>
+            <Link 
+              href="/admin/login" 
+              sx={{ 
+                color: theme.palette.grey[500], 
+                textDecoration: 'none',
+                fontSize: '0.75rem',
+                '&:hover': { color: theme.palette.grey[300] }
+              }}
+            >
+              Admin
+            </Link>
+          </Box>
         </Box>
       </Container>
     </Box>

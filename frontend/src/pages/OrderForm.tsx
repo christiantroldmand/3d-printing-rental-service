@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Container,
@@ -20,8 +20,10 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import FileUpload from '../components/FileUpload';
-import STLViewer from '../components/STLViewer';
+import MinimalSTLViewer from '../components/MinimalSTLViewer';
+import EnhancedMaterialSelector from '../components/EnhancedMaterialSelector';
 import PricingCalculator from '../components/PricingCalculator';
+import { PrintMaterial, QualityPreset } from '../data/materials';
 
 const steps = [
   'Upload 3D File',
@@ -33,7 +35,9 @@ const steps = [
 interface OrderData {
   file: File | null;
   fileUrl: string | null;
-  material: string;
+  material: PrintMaterial | null;
+  qualityPreset: QualityPreset | null;
+  selectedColor: string;
   layerHeight: string;
   infill: string;
   printQuality: string;
@@ -48,7 +52,9 @@ const OrderForm: React.FC = () => {
   const [orderData, setOrderData] = useState<OrderData>({
     file: null,
     fileUrl: null,
-    material: 'PLA',
+    material: null,
+    qualityPreset: null,
+    selectedColor: '',
     layerHeight: '0.2',
     infill: '20',
     printQuality: 'normal',
@@ -83,6 +89,10 @@ const OrderForm: React.FC = () => {
   const handleNext = () => {
     if (activeStep === 0 && !orderData.file) {
       setError('Please upload a 3D file to continue');
+      return;
+    }
+    if (activeStep === 1 && (!orderData.material || !orderData.qualityPreset)) {
+      setError('Please select both a material and quality preset to continue');
       return;
     }
     setActiveStep(prev => prev + 1);
@@ -143,7 +153,14 @@ const OrderForm: React.FC = () => {
               Choose your material and print settings to optimize quality and cost.
             </Typography>
             
-            <PricingCalculator />
+            <EnhancedMaterialSelector
+              selectedMaterial={orderData.material}
+              selectedQuality={orderData.qualityPreset}
+              selectedColor={orderData.selectedColor}
+              onMaterialChange={(material) => setOrderData(prev => ({ ...prev, material }))}
+              onQualityChange={(quality) => setOrderData(prev => ({ ...prev, qualityPreset: quality }))}
+              onColorChange={(color) => setOrderData(prev => ({ ...prev, selectedColor: color }))}
+            />
           </Box>
         );
 
@@ -162,13 +179,11 @@ const OrderForm: React.FC = () => {
                 <Typography variant="h6" gutterBottom>
                   3D Model Preview
                 </Typography>
-                <STLViewer
+                <MinimalSTLViewer
                   fileUrl={orderData.fileUrl}
                   fileName={orderData.file?.name}
                   width="100%"
                   height="300px"
-                  showControls={true}
-                  showGrid={true}
                 />
               </Box>
             )}
@@ -197,19 +212,27 @@ const OrderForm: React.FC = () => {
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography>Material:</Typography>
-                <Typography>{orderData.material}</Typography>
+                <Typography>{orderData.material?.name || 'Not selected'}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography>Quality Preset:</Typography>
+                <Typography>{orderData.qualityPreset?.name || 'Not selected'}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography>Color:</Typography>
+                <Typography>{orderData.selectedColor || 'Not selected'}</Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography>Layer Height:</Typography>
-                <Typography>{orderData.layerHeight}mm</Typography>
+                <Typography>{orderData.qualityPreset?.layerHeight || orderData.layerHeight}mm</Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography>Infill:</Typography>
-                <Typography>{orderData.infill}%</Typography>
+                <Typography>{orderData.qualityPreset?.infill || orderData.infill}%</Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography>Quality:</Typography>
-                <Typography>{orderData.printQuality}</Typography>
+                <Typography>Print Speed:</Typography>
+                <Typography>{orderData.qualityPreset?.printSpeed || 80}%</Typography>
               </Box>
             </Paper>
             
@@ -245,7 +268,9 @@ const OrderForm: React.FC = () => {
                 setOrderData({
                   file: null,
                   fileUrl: null,
-                  material: 'PLA',
+                  material: null,
+                  qualityPreset: null,
+                  selectedColor: '',
                   layerHeight: '0.2',
                   infill: '20',
                   printQuality: 'normal',

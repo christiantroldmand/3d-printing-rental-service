@@ -7,14 +7,18 @@ import {
   Alert,
   useTheme,
   Paper,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
+  Search as SearchIcon,
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
-import STLViewer from './STLViewer';
+import MinimalSTLViewer from './MinimalSTLViewer';
+import ThingiverseImport from './ThingiverseImport';
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
@@ -41,6 +45,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
 }) => {
   const theme = useTheme();
   const [dragActive, setDragActive] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
+  const [thingiverseOpen, setThingiverseOpen] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -58,11 +64,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
     accept: {
       'application/sla': ['.stl'],
       'application/octet-stream': ['.stl'],
+      'model/stl': ['.stl'],
       'model/obj': ['.obj'],
       'application/obj': ['.obj'],
       'model/gltf-binary': ['.glb'],
       'model/gltf+json': ['.gltf'],
       'application/3mf': ['.3mf'],
+      'model/3mf': ['.3mf'],
     },
     maxSize,
     multiple: false,
@@ -95,32 +103,62 @@ const FileUpload: React.FC<FileUploadProps> = ({
     }
   };
 
+  const handleThingiverseImport = async (modelId: string, selectedFileIndex: number) => {
+    try {
+      const response = await fetch(`/api/thingiverse/import/${modelId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ selectedFileIndex }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to import model from Thingiverse');
+      }
+
+      const result = await response.json();
+      // Create a fake File object for the imported model
+      const fakeFile = new File([''], result.stlFileId, { type: 'application/sla' });
+      onFileSelect(fakeFile);
+    } catch (err) {
+      console.error('Error importing from Thingiverse:', err);
+    }
+  };
+
   return (
     <Box>
-      {/* Upload Area */}
-      <Paper
-        {...getRootProps()}
-        sx={{
-          p: 4,
-          textAlign: 'center',
-          cursor: 'pointer',
-          border: `2px dashed ${
-            isDragReject
-              ? theme.palette.error.main
-              : isDragActive || dragActive
-              ? theme.palette.primary.main
-              : theme.palette.grey[300]
-          }`,
-          backgroundColor: isDragActive
-            ? theme.palette.primary.light + '20'
-            : theme.palette.grey[50],
-          transition: 'all 0.3s ease',
-          '&:hover': {
-            borderColor: theme.palette.primary.main,
-            backgroundColor: theme.palette.primary.light + '10',
-          },
-        }}
-      >
+      <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)} sx={{ mb: 3 }}>
+        <Tab label="Upload File" />
+        <Tab label="Import from Thingiverse" />
+      </Tabs>
+
+      {tabValue === 0 && (
+        <Paper
+          {...getRootProps()}
+          data-testid="dropzone"
+          sx={{
+            p: 4,
+            textAlign: 'center',
+            cursor: 'pointer',
+            border: `2px dashed ${
+              isDragReject
+                ? theme.palette.error.main
+                : isDragActive || dragActive
+                ? theme.palette.primary.main
+                : theme.palette.grey[300]
+            }`,
+            backgroundColor: isDragActive
+              ? theme.palette.primary.light + '20'
+              : theme.palette.grey[50],
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              borderColor: theme.palette.primary.main,
+              backgroundColor: theme.palette.primary.light + '10',
+            },
+          }}
+        >
         <input {...getInputProps()} />
         
         <UploadIcon
@@ -151,6 +189,26 @@ const FileUpload: React.FC<FileUploadProps> = ({
           Supported formats: {acceptedTypes.join(', ')} • Max size: {formatFileSize(maxSize)}
         </Typography>
       </Paper>
+      )}
+
+      {tabValue === 1 && (
+        <Box sx={{ textAlign: 'center', p: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            Import 3D Models from Thingiverse
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Browse thousands of free 3D models and import them directly to your project
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<SearchIcon />}
+            onClick={() => setThingiverseOpen(true)}
+            size="large"
+          >
+            Browse Thingiverse
+          </Button>
+        </Box>
+      )}
 
       {/* Loading State */}
       {loading && (
@@ -228,13 +286,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
           <Typography variant="h6" gutterBottom>
             3D Preview
           </Typography>
-          <STLViewer
-            fileUrl={fileUrl}
+          <MinimalSTLViewer
+            file={selectedFile}
             fileName={selectedFile.name}
             width="100%"
             height="400px"
-            showControls={true}
-            showGrid={true}
             onLoad={(geometry) => {
               console.log('3D model loaded:', geometry);
             }}
@@ -244,6 +300,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
           />
         </Box>
       )}
+
+      <ThingiverseImport
+        open={thingiverseOpen}
+        onClose={() => setThingiverseOpen(false)}
+        onModelImport={handleThingiverseImport}
+      />
     </Box>
   );
 };

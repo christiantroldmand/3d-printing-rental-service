@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -16,7 +16,6 @@ import {
   CircularProgress,
 } from '@mui/material';
 import {
-  AttachMoney as MoneyIcon,
   Schedule as TimeIcon,
   LocalShipping as EcoIcon,
   Palette as MaterialIcon,
@@ -54,13 +53,9 @@ const PricingCalculator: React.FC = () => {
     TPU: { density: 1.20, costPerGram: 0.08, printSpeed: 0.5 },
   };
 
-  // Electricity price (simulated - would come from Nordpool API)
-  const electricityPrice = 0.25; // EUR/kWh
-  const hourlyRate = 15; // EUR/hour
-  const laborMarkup = 0.15;
-  const platformFee = 0.05;
+  // These values are now calculated by the backend API
 
-  const calculatePricing = async () => {
+  const calculatePricing = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -70,49 +65,50 @@ const PricingCalculator: React.FC = () => {
         throw new Error('Please enter a valid volume');
       }
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('/api/pricing/calculate-volume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          volume: volume,
+          materialType: formData.material,
+          printSettings: {
+            layerHeight: parseFloat(formData.layerHeight),
+            infillPercentage: parseFloat(formData.infill),
+            printQuality: formData.printQuality,
+          },
+          quantity: 1,
+        }),
+      });
 
-      const material = materials[formData.material as keyof typeof materials];
-      const layerHeight = parseFloat(formData.layerHeight);
-      const infill = parseFloat(formData.infill) / 100;
-      const qualityMultiplier = formData.printQuality === 'high' ? 1.2 : formData.printQuality === 'draft' ? 0.8 : 1.0;
+      if (!response.ok) {
+        throw new Error('Failed to calculate pricing');
+      }
 
-      // Calculate filament weight (with 5% waste factor)
-      const filamentWeight = (volume * material.density * infill * 1.05) / 1000; // Convert to grams
-      
-      // Calculate print time (simplified formula)
-      const baseTime = volume / (1000 * layerHeight * material.printSpeed * qualityMultiplier); // hours
-      const printTime = Math.max(baseTime, 0.5); // Minimum 30 minutes
-
-      // Calculate costs
-      const materialCost = filamentWeight * material.costPerGram;
-      const timeCost = printTime * hourlyRate;
-      const electricityCost = (printTime * 0.2) * electricityPrice; // 200W average power
-      const subtotal = materialCost + timeCost + electricityCost;
-      const totalCost = subtotal * (1 + laborMarkup + platformFee);
+      const pricing = await response.json();
 
       setPricing({
-        materialCost,
-        timeCost,
-        electricityCost,
-        laborMarkup: subtotal * laborMarkup,
-        platformFee: subtotal * platformFee,
-        totalCost,
+        materialCost: pricing.materialCost,
+        timeCost: pricing.laborCost,
+        electricityCost: pricing.electricityCost,
+        laborMarkup: 0, // Already included in laborCost
+        platformFee: pricing.platformFee,
+        totalCost: pricing.totalCost,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
-  };
+  }, [formData]);
 
   useEffect(() => {
     if (formData.volume) {
       const timeoutId = setTimeout(calculatePricing, 500);
       return () => clearTimeout(timeoutId);
     }
-  }, [formData]);
+  }, [formData, calculatePricing]);
 
   const formatCurrency = (amount: number) => `€${amount.toFixed(2)}`;
 
@@ -145,6 +141,7 @@ const PricingCalculator: React.FC = () => {
                 <Select
                   value={formData.material}
                   onChange={(e) => setFormData({ ...formData, material: e.target.value })}
+                  data-testid="material-select"
                 >
                   {Object.entries(materials).map(([name, props]) => (
                     <MenuItem key={name} value={name}>
@@ -162,6 +159,7 @@ const PricingCalculator: React.FC = () => {
                 <Select
                   value={formData.layerHeight}
                   onChange={(e) => setFormData({ ...formData, layerHeight: e.target.value })}
+                  data-testid="layer-height-select"
                 >
                   <MenuItem value="0.1">0.1mm (High Quality)</MenuItem>
                   <MenuItem value="0.2">0.2mm (Normal)</MenuItem>
@@ -176,6 +174,7 @@ const PricingCalculator: React.FC = () => {
                 <Select
                   value={formData.infill}
                   onChange={(e) => setFormData({ ...formData, infill: e.target.value })}
+                  data-testid="infill-select"
                 >
                   <MenuItem value="10">10% (Lightweight)</MenuItem>
                   <MenuItem value="20">20% (Standard)</MenuItem>

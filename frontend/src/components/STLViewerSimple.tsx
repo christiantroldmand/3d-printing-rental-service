@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Grid } from '@react-three/drei';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
 import * as THREE from 'three';
@@ -242,7 +242,25 @@ const Model: React.FC<ModelProps> = ({ url, file, onLoad, onError }) => {
   );
 };
 
-const STLViewer: React.FC<STLViewerProps> = ({
+// Simple Grid Component without external dependencies
+const SimpleGrid: React.FC = () => {
+  return (
+    <Grid 
+      args={[10, 10]} 
+      position={[0, -2, 0]}
+      cellSize={0.5}
+      cellThickness={0.5}
+      cellColor="#6f6f6f"
+      sectionSize={1}
+      sectionThickness={1}
+      sectionColor="#9d4edd"
+      fadeDistance={30}
+      fadeStrength={1}
+    />
+  );
+};
+
+const STLViewerSimple: React.FC<STLViewerProps> = ({
   fileUrl,
   file,
   fileName,
@@ -266,22 +284,6 @@ const STLViewer: React.FC<STLViewerProps> = ({
 
   const handleError = (error: string) => {
     onError?.(error);
-  };
-
-  const handleZoomIn = () => {
-    // Zoom in functionality would be handled by OrbitControls
-  };
-
-  const handleZoomOut = () => {
-    // Zoom out functionality would be handled by OrbitControls
-  };
-
-  const handleReset = () => {
-    // Reset view functionality would be handled by OrbitControls
-  };
-
-  const handleFitToView = () => {
-    // Fit to view functionality would be handled by OrbitControls
   };
 
   const handleToggleGrid = () => {
@@ -354,7 +356,6 @@ const STLViewer: React.FC<STLViewerProps> = ({
           minDistance={1}
           maxDistance={10}
         />
-        
       </Canvas>
 
       {showControls && (
@@ -368,30 +369,6 @@ const STLViewer: React.FC<STLViewerProps> = ({
             gap: 1,
           }}
         >
-          <Tooltip title="Zoom In">
-            <IconButton onClick={handleZoomIn} size="small">
-              <ZoomInIcon />
-            </IconButton>
-          </Tooltip>
-          
-          <Tooltip title="Zoom Out">
-            <IconButton onClick={handleZoomOut} size="small">
-              <ZoomOutIcon />
-            </IconButton>
-          </Tooltip>
-          
-          <Tooltip title="Reset View">
-            <IconButton onClick={handleReset} size="small">
-              <RotateLeftIcon />
-            </IconButton>
-          </Tooltip>
-          
-          <Tooltip title="Fit to View">
-            <IconButton onClick={handleFitToView} size="small">
-              <ViewInArIcon />
-            </IconButton>
-          </Tooltip>
-          
           <Tooltip title={showGridState ? 'Hide Grid' : 'Show Grid'}>
             <IconButton onClick={handleToggleGrid} size="small">
               {showGridState ? <GridOffIcon /> : <GridOnIcon />}
@@ -443,4 +420,5 @@ const STLViewer: React.FC<STLViewerProps> = ({
   );
 };
 
-export default STLViewer;
+export default STLViewerSimple;
+

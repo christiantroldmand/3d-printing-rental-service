@@ -4,15 +4,9 @@ import {
   Container,
   Typography,
   Button,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
   Chip,
   useTheme,
-  useMediaQuery,
   Fade,
-  Slide,
 } from '@mui/material';
 import {
   Print as PrintIcon,
@@ -20,19 +14,19 @@ import {
   LocalShipping as EcoIcon,
   Security as SecurityIcon,
   AttachMoney as MoneyIcon,
-  Schedule as ScheduleIcon,
   Palette as PaletteIcon,
   ThreeDRotation as ThreeDIcon,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import PricingCalculator from '../components/PricingCalculator';
 import FeatureCard from '../components/FeatureCard';
 import StatsSection from '../components/StatsSection';
 
 const LandingPage: React.FC = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { t } = useTranslation();
   const [showCalculator, setShowCalculator] = useState(false);
 
   const features = [
@@ -111,10 +105,7 @@ const LandingPage: React.FC = () => {
                     mb: 3,
                   }}
                 >
-                  Professional 3D Printing
-                  <Box component="span" sx={{ display: 'block', color: theme.palette.secondary.light }}>
-                    Made Simple
-                  </Box>
+                  {t('hero.title')}
                 </Typography>
                 
                 <Typography
@@ -126,9 +117,7 @@ const LandingPage: React.FC = () => {
                     fontWeight: 400,
                   }}
                 >
-                  Upload your STL files, choose materials, and get instant pricing 
-                  with real-time electricity costs. Professional quality prints 
-                  delivered fast.
+                  {t('hero.subtitle')}
                 </Typography>
 
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
@@ -152,7 +141,7 @@ const LandingPage: React.FC = () => {
                       },
                     }}
                   >
-                    Start Printing
+                    {t('hero.cta')}
                   </Button>
                   
                   <Button
@@ -173,7 +162,7 @@ const LandingPage: React.FC = () => {
                       },
                     }}
                   >
-                    Calculate Price
+                    {t('hero.learnMore')}
                   </Button>
                 </Box>
 
@@ -285,7 +274,7 @@ const LandingPage: React.FC = () => {
             gutterBottom
             sx={{ mb: 2, fontWeight: 700 }}
           >
-            Why Choose 3D Print Pro?
+            Why Choose NORDSJÆLLAND 3D PRINT SERVICE?
           </Typography>
           <Typography
             variant="h6"

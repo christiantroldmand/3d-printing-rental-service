@@ -1,0 +1,126 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "refresh": "Refresh",
+    "back": "Back",
+    "continue": "Continue",
+    "finish": "Finish"
+  },
+  "navigation": {
+    "home": "Home",
+    "order": "Order",
+    "dashboard": "Dashboard",
+    "admin": "Admin",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  },
+  "hero": {
+    "title": "Professional 3D Printing Services",
+    "subtitle": "Transform your ideas into reality with our state-of-the-art 3D printing technology",
+    "cta": "Start Your Order",
+    "learnMore": "Learn More"
+  },
+  "features": {
+    "title": "Why Choose NORDSJÆLLAND 3D PRINT SERVICE?",
+    "quality": {
+      "title": "Premium Quality",
+      "description": "High-precision printing with professional-grade materials"
+    },
+    "speed": {
+      "title": "Fast Turnaround",
+      "description": "Quick delivery without compromising on quality"
+    },
+    "materials": {
+      "title": "Wide Material Selection",
+      "description": "PLA, PETG, ABS, TPU, and more materials available"
+    },
+    "support": {
+      "title": "Expert Support",
+      "description": "Professional guidance throughout your project"
+    }
+  },
+  "pricing": {
+    "title": "Calculate Your Print Cost",
+    "volume": "Volume (cm³)",
+    "material": "Material",
+    "layerHeight": "Layer Height",
+    "infill": "Infill Percentage",
+    "quality": "Print Quality",
+    "calculate": "Calculate Price",
+    "materialCost": "Material Cost",
+    "timeCost": "Time Cost",
+    "electricityCost": "Electricity Cost",
+    "platformFee": "Platform Fee",
+    "totalCost": "Total Cost",
+    "breakdown": "Pricing Breakdown"
+  },
+  "order": {
+    "title": "Place Your Order",
+    "step1": "Upload 3D File",
+    "step2": "Select Material & Settings",
+    "step3": "Review & Calculate Price",
+    "step4": "Place Order",
+    "uploadTitle": "Upload Your 3D File",
+    "uploadDescription": "Upload an STL, OBJ, or 3MF file to get started",
+    "dragDrop": "Drag and drop your file here, or click to browse",
+    "supportedFormats": "Supported formats: .stl, .obj, .3mf • Max size: 50MB",
+    "fileUploaded": "File uploaded successfully",
+    "removeFile": "Remove File",
+    "preview": "3D Preview",
+    "materialSettings": "Material & Print Settings",
+    "selectMaterial": "Select Material",
+    "layerHeight": "Layer Height (mm)",
+    "infillPercentage": "Infill Percentage",
+    "printQuality": "Print Quality",
+    "quantity": "Quantity",
+    "reviewTitle": "Review Your Order",
+    "orderSummary": "Order Summary",
+    "placeOrder": "Place Order",
+    "thingiverseImport": "Import from Thingiverse",
+    "browseThingiverse": "Browse Thingiverse"
+  },
+  "materials": {
+    "PLA": "PLA",
+    "PETG": "PETG",
+    "ABS": "ABS",
+    "TPU": "TPU",
+    "ASA": "ASA"
+  },
+  "quality": {
+    "draft": "Draft",
+    "standard": "Standard",
+    "high": "High"
+  },
+  "stats": {
+    "title": "Our numbers speak for themselves",
+    "projects": "Projects Completed",
+    "customers": "Happy Customers",
+    "materials": "Materials Available",
+    "years": "Years of Experience"
+  },
+  "footer": {
+    "company": "NORDSJÆLLAND 3D PRINT SERVICE",
+    "description": "Professional 3D printing services in North Zealand, Denmark",
+    "quickLinks": "Quick Links",
+    "services": "Services",
+    "contact": "Contact",
+    "address": "North Zealand, Denmark",
+    "phone": "+45 XX XX XX XX",
+    "email": "info@nordsjaelland3dprint.dk",
+    "copyright": "© 2024 NORDSJÆLLAND 3D PRINT SERVICE. All rights reserved."
+  }
+}

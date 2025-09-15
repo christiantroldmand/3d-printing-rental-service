@@ -6,9 +6,11 @@ import { Box } from '@mui/material';
 import LandingPage from './pages/LandingPage';
 import OrderForm from './pages/OrderForm';
 import Dashboard from './pages/Dashboard';
-import AdminPanel from './pages/AdminPanel';
+import AdminAuth from './components/AdminAuth';
+import AdminLayout from './pages/AdminLayout';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import './i18n';
 
 // Create a beautiful, modern theme
 const theme = createTheme({
@@ -123,12 +125,13 @@ function App() {
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
           <Navbar />
           <Box component="main" sx={{ flexGrow: 1 }}>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/order" element={<OrderForm />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/admin" element={<AdminPanel />} />
-            </Routes>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/order" element={<OrderForm />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin/login" element={<AdminAuth onAuthenticated={() => window.location.href = '/admin'} />} />
+            <Route path="/admin/*" element={<AdminLayout />} />
+          </Routes>
           </Box>
           <Footer />
         </Box>

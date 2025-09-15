@@ -6,54 +6,42 @@ import {
   Button,
   Box,
   IconButton,
-  Menu,
-  MenuItem,
   useTheme,
   useMediaQuery,
   Drawer,
   List,
   ListItem,
-  ListItemText,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   Print as PrintIcon,
-  Dashboard as DashboardIcon,
-  AdminPanelSettings as AdminIcon,
   AccountCircle as AccountIcon,
 } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Navbar: React.FC = () => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
-
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const { t } = useTranslation();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
   const navItems = [
-    { label: 'Home', path: '/' },
-    { label: 'Order Print', path: '/order' },
-    { label: 'Dashboard', path: '/dashboard' },
-    { label: 'Admin', path: '/admin' },
+    { label: t('navigation.home'), path: '/' },
+    { label: t('navigation.order'), path: '/order' },
+    { label: t('navigation.dashboard'), path: '/dashboard' },
   ];
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
       <Typography variant="h6" sx={{ my: 2, fontWeight: 700, color: theme.palette.primary.main }}>
-        3D Print Pro
+        NORDSJÆLLAND 3D PRINT SERVICE
       </Typography>
       <List>
         {navItems.map((item) => (
@@ -85,6 +73,7 @@ const Navbar: React.FC = () => {
       <AppBar
         position="sticky"
         elevation={0}
+        role="navigation"
         sx={{
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(10px)',
@@ -107,7 +96,7 @@ const Navbar: React.FC = () => {
                 },
               }}
             >
-              3D Print Pro
+              NORDSJÆLLAND 3D PRINT SERVICE
             </Typography>
           </Box>
 
@@ -140,6 +129,7 @@ const Navbar: React.FC = () => {
                   {item.label}
                 </Button>
               ))}
+              <LanguageSwitcher />
               <Button
                 variant="contained"
                 startIcon={<AccountIcon />}
@@ -150,7 +140,7 @@ const Navbar: React.FC = () => {
                   py: 1,
                 }}
               >
-                Sign In
+                {t('navigation.login')}
               </Button>
             </Box>
           )}

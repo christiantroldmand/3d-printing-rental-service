@@ -14,6 +14,9 @@ import pricingRoutes from './routes/pricing';
 import uploadRoutes from './routes/upload';
 import adminRoutes from './routes/admin';
 import electricityRoutes from './routes/electricity';
+import webhookRoutes from './routes/webhooks';
+import thingiverseRoutes from './routes/thingiverse';
+import nordpoolService from './services/nordpoolService';
 
 // Load environment variables
 dotenv.config();
@@ -66,6 +69,8 @@ app.use('/api/pricing', pricingRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/electricity', electricityRoutes);
+app.use('/api/webhooks', webhookRoutes);
+app.use('/api/thingiverse', thingiverseRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -108,6 +113,9 @@ app.listen(PORT, () => {
   console.log(`📊 Environment: ${process.env.NODE_ENV}`);
   console.log(`🔗 CORS enabled for: ${process.env.CORS_ORIGIN}`);
   console.log(`💾 Database: ${process.env.DATABASE_URL?.split('@')[1] || 'Not configured'}`);
+  
+  // Start Nordpool price update job
+  nordpoolService.startPriceUpdateJob();
 });
 
 export default app;
