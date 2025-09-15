@@ -44,6 +44,7 @@ interface OrderData {
   supportRequired: boolean;
   volume: number;
   pricing: any;
+  stlAnalysis: any;
 }
 
 const OrderForm: React.FC = () => {
@@ -61,6 +62,7 @@ const OrderForm: React.FC = () => {
     supportRequired: false,
     volume: 0,
     pricing: null,
+    stlAnalysis: null,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -277,6 +279,7 @@ const OrderForm: React.FC = () => {
                   supportRequired: false,
                   volume: 0,
                   pricing: null,
+                  stlAnalysis: null,
                 });
               }}
             >

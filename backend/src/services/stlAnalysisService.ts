@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as stlParser from 'stl-parser';
 
 const prisma = new PrismaClient();
 
@@ -27,6 +28,8 @@ interface PrintSettings {
   infillPercentage: number; // 0-100
   wallThickness: number; // mm
   supportDensity: number; // 0-100
+  materialType: string; // PLA, PETG, ABS, etc.
+  printQuality: string; // draft, normal, high
 }
 
 class STLAnalysisService {
@@ -92,9 +95,72 @@ class STLAnalysisService {
   }
 
   private async parseSTLData(stlData: Buffer): Promise<any> {
-    // This is a simplified STL parser
-    // In production, you'd use a proper STL parsing library
-    
+    try {
+      // Use stl-parser library for better STL parsing
+      const stlString = stlData.toString('binary');
+      const parsed = stlParser.parseStlSync(stlString);
+      
+      let minX = Infinity, minY = Infinity, minZ = Infinity;
+      let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+      let totalVolume = 0;
+      let totalSurfaceArea = 0;
+      let totalTriangles = 0;
+
+      // Process all triangles
+      for (const triangle of parsed.triangles) {
+        const v1 = triangle.vertex1;
+        const v2 = triangle.vertex2;
+        const v3 = triangle.vertex3;
+
+        // Update bounding box
+        minX = Math.min(minX, v1.x, v2.x, v3.x);
+        minY = Math.min(minY, v1.y, v2.y, v3.y);
+        minZ = Math.min(minZ, v1.z, v2.z, v3.z);
+        maxX = Math.max(maxX, v1.x, v2.x, v3.x);
+        maxY = Math.max(maxY, v1.y, v2.y, v3.y);
+        maxZ = Math.max(maxZ, v1.z, v2.z, v3.z);
+
+        // Calculate triangle area
+        const area = this.calculateTriangleArea(v1, v2, v3);
+        totalSurfaceArea += area;
+
+        // Calculate volume using tetrahedron method (more accurate)
+        const tetrahedronVolume = this.calculateTetrahedronVolume(
+          { x: 0, y: 0, z: 0 }, // Origin
+          v1, v2, v3
+        );
+        totalVolume += Math.abs(tetrahedronVolume);
+        totalTriangles++;
+      }
+
+      // Convert to cm
+      const width = (maxX - minX) / 10;
+      const height = (maxY - minY) / 10;
+      const depth = (maxZ - minZ) / 10;
+
+      return {
+        volume: totalVolume / 1000, // Convert to cm³
+        dimensions: {
+          width,
+          height,
+          depth,
+        },
+        surfaceArea: totalSurfaceArea / 100, // Convert to cm²
+        boundingBox: {
+          min: { x: minX / 10, y: minY / 10, z: minZ / 10 },
+          max: { x: maxX / 10, y: maxY / 10, z: maxZ / 10 },
+        },
+        triangleCount: totalTriangles,
+      };
+    } catch (error) {
+      console.error('Error parsing STL with library, falling back to manual parsing:', error);
+      // Fallback to manual parsing if library fails
+      return this.parseSTLDataManual(stlData);
+    }
+  }
+
+  private async parseSTLDataManual(stlData: Buffer): Promise<any> {
+    // Fallback manual STL parser
     const header = stlData.slice(0, 80);
     const triangleCount = stlData.readUInt32LE(80);
     
@@ -103,16 +169,12 @@ class STLAnalysisService {
     let totalVolume = 0;
     let totalSurfaceArea = 0;
 
-    // Parse triangles (simplified - real implementation would be more complex)
-    for (let i = 0; i < Math.min(triangleCount, 1000); i++) { // Limit for performance
+    // Parse triangles (limit for performance)
+    const maxTriangles = Math.min(triangleCount, 5000);
+    for (let i = 0; i < maxTriangles; i++) {
       const offset = 84 + (i * 50);
       
-      // Read normal vector (12 bytes)
-      const nx = stlData.readFloatLE(offset);
-      const ny = stlData.readFloatLE(offset + 4);
-      const nz = stlData.readFloatLE(offset + 8);
-      
-      // Read vertices (36 bytes)
+      // Read vertices
       const v1x = stlData.readFloatLE(offset + 12);
       const v1y = stlData.readFloatLE(offset + 16);
       const v1z = stlData.readFloatLE(offset + 20);
@@ -133,33 +195,46 @@ class STLAnalysisService {
       maxY = Math.max(maxY, v1y, v2y, v3y);
       maxZ = Math.max(maxZ, v1z, v2z, v3z);
 
-      // Calculate triangle area (simplified)
+      // Calculate triangle area
       const area = this.calculateTriangleArea(
         { x: v1x, y: v1y, z: v1z },
         { x: v2x, y: v2y, z: v2z },
         { x: v3x, y: v3y, z: v3z }
       );
       totalSurfaceArea += area;
+
+      // Calculate volume using tetrahedron method
+      const tetrahedronVolume = this.calculateTetrahedronVolume(
+        { x: 0, y: 0, z: 0 },
+        { x: v1x, y: v1y, z: v1z },
+        { x: v2x, y: v2y, z: v2z },
+        { x: v3x, y: v3y, z: v3z }
+      );
+      totalVolume += Math.abs(tetrahedronVolume);
     }
 
-    // Calculate volume using bounding box approximation
-    const width = maxX - minX;
-    const height = maxY - minY;
-    const depth = maxZ - minZ;
-    totalVolume = (width * height * depth) / 1000; // Convert to cm³
+    // Scale up volume if we limited triangles
+    if (maxTriangles < triangleCount) {
+      totalVolume *= (triangleCount / maxTriangles);
+    }
+
+    const width = (maxX - minX) / 10;
+    const height = (maxY - minY) / 10;
+    const depth = (maxZ - minZ) / 10;
 
     return {
-      volume: totalVolume,
+      volume: totalVolume / 1000, // Convert to cm³
       dimensions: {
-        width: width / 10, // Convert to cm
-        height: height / 10,
-        depth: depth / 10,
+        width,
+        height,
+        depth,
       },
       surfaceArea: totalSurfaceArea / 100, // Convert to cm²
       boundingBox: {
-        min: { x: minX, y: minY, z: minZ },
-        max: { x: maxX, y: maxY, z: maxZ },
+        min: { x: minX / 10, y: minY / 10, z: minZ / 10 },
+        max: { x: maxX / 10, y: maxY / 10, z: maxZ / 10 },
       },
+      triangleCount: maxTriangles,
     };
   }
 
@@ -179,17 +254,49 @@ class STLAnalysisService {
     return Math.sqrt(s * (s - a) * (s - b) * (s - c));
   }
 
+  private calculateTetrahedronVolume(v0: any, v1: any, v2: any, v3: any): number {
+    // Calculate volume of tetrahedron using scalar triple product
+    // Volume = |(v1-v0) · ((v2-v0) × (v3-v0))| / 6
+    
+    const a = { x: v1.x - v0.x, y: v1.y - v0.y, z: v1.z - v0.z };
+    const b = { x: v2.x - v0.x, y: v2.y - v0.y, z: v2.z - v0.z };
+    const c = { x: v3.x - v0.x, y: v3.y - v0.y, z: v3.z - v0.z };
+    
+    // Calculate cross product b × c
+    const cross = {
+      x: b.y * c.z - b.z * c.y,
+      y: b.z * c.x - b.x * c.z,
+      z: b.x * c.y - b.y * c.x
+    };
+    
+    // Calculate dot product a · (b × c)
+    const dot = a.x * cross.x + a.y * cross.y + a.z * cross.z;
+    
+    return Math.abs(dot) / 6;
+  }
+
   private calculateMaterialUsage(geometry: any, settings: PrintSettings): number {
     // Calculate material usage based on volume, infill, and support
     const baseVolume = geometry.volume; // cm³
-    const infillVolume = baseVolume * (settings.infillPercentage / 100);
+    
+    // Calculate wall volume (perimeter * height * wall thickness)
     const wallVolume = this.calculateWallVolume(geometry, settings);
+    
+    // Calculate infill volume (internal volume * infill percentage)
+    const internalVolume = Math.max(0, baseVolume - wallVolume);
+    const infillVolume = internalVolume * (settings.infillPercentage / 100);
+    
+    // Calculate support volume if needed
     const supportVolume = settings.supportRequired ? this.calculateSupportVolume(geometry, settings) : 0;
     
-    const totalVolume = infillVolume + wallVolume + supportVolume;
+    // Calculate brim/raft volume (estimated)
+    const brimVolume = this.calculateBrimVolume(geometry, settings);
     
-    // Convert to grams (assuming PLA density)
-    const materialDensity = this.MATERIAL_DENSITIES.PLA; // g/cm³
+    const totalVolume = wallVolume + infillVolume + supportVolume + brimVolume;
+    
+    // Get material density
+    const materialDensity = this.MATERIAL_DENSITIES[settings.materialType as keyof typeof this.MATERIAL_DENSITIES] || this.MATERIAL_DENSITIES.PLA;
+    
     return totalVolume * materialDensity;
   }
 
@@ -211,29 +318,99 @@ class STLAnalysisService {
     return baseArea * supportHeight * supportDensity;
   }
 
+  private calculateBrimVolume(geometry: any, settings: PrintSettings): number {
+    // Calculate brim/raft volume
+    const baseArea = geometry.dimensions.width * geometry.dimensions.depth;
+    const brimWidth = 5; // 5mm brim width
+    const brimHeight = settings.layerHeight / 10; // Convert mm to cm
+    
+    // Brim extends around the perimeter
+    const perimeter = 2 * (geometry.dimensions.width + geometry.dimensions.depth);
+    const brimArea = perimeter * (brimWidth / 10); // Convert mm to cm
+    
+    return brimArea * brimHeight;
+  }
+
   private estimatePrintTime(geometry: any, settings: PrintSettings): number {
     // Estimate print time based on geometry and settings
     const volume = geometry.volume; // cm³
     const surfaceArea = geometry.surfaceArea; // cm²
+    const dimensions = geometry.dimensions;
     
-    // Base time calculation
-    const layerCount = Math.ceil(geometry.dimensions.height * 10 / settings.layerHeight);
-    const averageSpeed = this.PRINTER_SPECS.averagePrintSpeed; // mm/s
+    // Calculate layer count
+    const layerCount = Math.ceil(dimensions.height * 10 / settings.layerHeight);
     
-    // Time for perimeters
-    const perimeterTime = (surfaceArea * 10) / averageSpeed; // Convert cm² to mm²
+    // Get print speeds based on quality and material
+    const speeds = this.getPrintSpeeds(settings);
     
-    // Time for infill
-    const infillTime = (volume * settings.infillPercentage / 100) / averageSpeed;
+    // Calculate perimeter time (outer walls)
+    const perimeterLength = 2 * (dimensions.width + dimensions.depth) * 10; // Convert to mm
+    const perimeterTime = (perimeterLength * layerCount) / speeds.perimeter;
     
-    // Time for supports
-    const supportTime = settings.supportRequired ? perimeterTime * 0.3 : 0;
+    // Calculate infill time
+    const infillArea = dimensions.width * dimensions.depth * 100; // Convert to mm²
+    const infillTime = (infillArea * layerCount * settings.infillPercentage / 100) / speeds.infill;
     
-    // Layer change time
-    const layerChangeTime = layerCount * 0.1; // 0.1 seconds per layer
+    // Calculate support time
+    const supportTime = settings.supportRequired ? 
+      (infillArea * layerCount * 0.3) / speeds.support : 0;
     
-    const totalTimeSeconds = perimeterTime + infillTime + supportTime + layerChangeTime;
+    // Calculate brim time
+    const brimLength = 2 * (dimensions.width + dimensions.depth) * 10; // Convert to mm
+    const brimTime = (brimLength * 5) / speeds.perimeter; // 5 lines of brim
+    
+    // Calculate layer change time
+    const layerChangeTime = layerCount * 0.2; // 0.2 seconds per layer change
+    
+    // Calculate acceleration/deceleration overhead (10% of total time)
+    const baseTime = perimeterTime + infillTime + supportTime + brimTime + layerChangeTime;
+    const overhead = baseTime * 0.1;
+    
+    const totalTimeSeconds = baseTime + overhead;
     return totalTimeSeconds / 3600; // Convert to hours
+  }
+
+  private getPrintSpeeds(settings: PrintSettings): { perimeter: number; infill: number; support: number } {
+    const baseSpeed = this.PRINTER_SPECS.averagePrintSpeed;
+    
+    // Adjust speeds based on quality
+    let speedMultiplier = 1.0;
+    switch (settings.printQuality) {
+      case 'draft':
+        speedMultiplier = 1.5;
+        break;
+      case 'normal':
+        speedMultiplier = 1.0;
+        break;
+      case 'high':
+        speedMultiplier = 0.7;
+        break;
+    }
+    
+    // Adjust speeds based on material
+    let materialMultiplier = 1.0;
+    switch (settings.materialType) {
+      case 'PLA':
+        materialMultiplier = 1.0;
+        break;
+      case 'PETG':
+        materialMultiplier = 0.8;
+        break;
+      case 'ABS':
+        materialMultiplier = 0.6;
+        break;
+      case 'TPU':
+        materialMultiplier = 0.3;
+        break;
+    }
+    
+    const finalMultiplier = speedMultiplier * materialMultiplier;
+    
+    return {
+      perimeter: baseSpeed * finalMultiplier,
+      infill: baseSpeed * finalMultiplier * 1.2, // Infill is typically faster
+      support: baseSpeed * finalMultiplier * 1.5, // Support is typically fastest
+    };
   }
 
   private calculatePrintabilityScore(geometry: any): number {

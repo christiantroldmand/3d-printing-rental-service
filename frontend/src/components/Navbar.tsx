@@ -11,31 +11,57 @@ import {
   Drawer,
   List,
   ListItem,
+  Menu,
+  MenuItem,
+  Avatar,
+  Divider,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   Print as PrintIcon,
   AccountCircle as AccountIcon,
+  Dashboard as DashboardIcon,
+  Logout as LogoutIcon,
+  Person as PersonIcon,
 } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../contexts/AuthContext';
 import LanguageSwitcher from './LanguageSwitcher';
 
 const Navbar: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    logout();
+    handleProfileMenuClose();
+    navigate('/');
+  };
+
   const navItems = [
     { label: t('navigation.home'), path: '/' },
-    { label: t('navigation.order'), path: '/order' },
-    { label: t('navigation.dashboard'), path: '/dashboard' },
+    ...(isAuthenticated ? [
+      { label: t('navigation.order'), path: '/order' },
+      { label: t('navigation.dashboard'), path: '/dashboard' },
+    ] : []),
   ];
 
   const drawer = (
@@ -130,18 +156,60 @@ const Navbar: React.FC = () => {
                 </Button>
               ))}
               <LanguageSwitcher />
-              <Button
-                variant="contained"
-                startIcon={<AccountIcon />}
-                onClick={() => navigate('/dashboard')}
-                sx={{
-                  ml: 2,
-                  px: 3,
-                  py: 1,
-                }}
-              >
-                {t('navigation.login')}
-              </Button>
+              
+              {isAuthenticated ? (
+                <>
+                  <IconButton
+                    onClick={handleProfileMenuOpen}
+                    sx={{ p: 0 }}
+                  >
+                    <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main }}>
+                      {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+                    </Avatar>
+                  </IconButton>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleProfileMenuClose}
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    }}
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                  >
+                    <MenuItem onClick={handleProfileMenuClose}>
+                      <PersonIcon sx={{ mr: 1 }} />
+                      {user?.firstName} {user?.lastName}
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem component={Link} to="/dashboard" onClick={handleProfileMenuClose}>
+                      <DashboardIcon sx={{ mr: 1 }} />
+                      Dashboard
+                    </MenuItem>
+                    <MenuItem onClick={handleLogout}>
+                      <LogoutIcon sx={{ mr: 1 }} />
+                      Logout
+                    </MenuItem>
+                  </Menu>
+                </>
+              ) : (
+                <Button
+                  variant="contained"
+                  startIcon={<AccountIcon />}
+                  component={Link}
+                  to="/login"
+                  sx={{
+                    ml: 2,
+                    px: 3,
+                    py: 1,
+                  }}
+                >
+                  Sign In
+                </Button>
+              )}
             </Box>
           )}
         </Toolbar>

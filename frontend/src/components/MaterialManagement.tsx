@@ -27,22 +27,17 @@ import {
   Snackbar,
   Tooltip,
   Badge,
-  Tabs,
-  Tab,
   Switch,
   FormControlLabel,
-  Divider,
 } from '@mui/material';
 import { Grid } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Inventory as InventoryIcon,
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
   Refresh as RefreshIcon,
-  FilterList as FilterIcon,
 } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 
@@ -76,7 +71,6 @@ interface MaterialManagementProps {
 }
 
 const MaterialManagement: React.FC<MaterialManagementProps> = ({ isAdmin = false }) => {
-  const theme = useTheme();
   const [materials, setMaterials] = useState<PrintMaterial[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +78,6 @@ const MaterialManagement: React.FC<MaterialManagementProps> = ({ isAdmin = false
   const [selectedMaterial, setSelectedMaterial] = useState<PrintMaterial | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
-  const [tabValue, setTabValue] = useState(0);
   const [filterType, setFilterType] = useState<string>('all');
   const [lowStockOnly, setLowStockOnly] = useState(false);
 

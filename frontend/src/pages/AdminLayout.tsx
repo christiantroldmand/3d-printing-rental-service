@@ -22,7 +22,7 @@ import {
   Settings as SettingsIcon,
   ExitToApp as LogoutIcon,
 } from '@mui/icons-material';
-import { useNavigate, Outlet } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import AdminDashboard from './AdminDashboard';
 import MaterialManagement from '../components/MaterialManagement';
 
@@ -86,14 +86,18 @@ const AdminLayout: React.FC = () => {
         {menuItems.map((item) => (
           <ListItem
             key={item.id}
-            button
+            component="div"
             onClick={() => {
               setCurrentPage(item.id);
               if (isMobile) {
                 setDrawerOpen(false);
               }
             }}
-            selected={currentPage === item.id}
+            sx={{
+              cursor: 'pointer',
+              backgroundColor: currentPage === item.id ? 'primary.light' : 'transparent',
+              '&:hover': { backgroundColor: 'primary.light' },
+            }}
           >
             <ListItemIcon>{item.icon}</ListItemIcon>
             <ListItemText primary={item.label} />
@@ -102,7 +106,14 @@ const AdminLayout: React.FC = () => {
       </List>
       <Divider />
       <List>
-        <ListItem button onClick={handleLogout}>
+        <ListItem 
+          component="div" 
+          onClick={handleLogout}
+          sx={{
+            cursor: 'pointer',
+            '&:hover': { backgroundColor: 'primary.light' },
+          }}
+        >
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>
